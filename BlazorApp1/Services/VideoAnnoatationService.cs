@@ -23,9 +23,18 @@ namespace BlazorApp1.Services
         }
         public void SubVideo(string linkToVideo, string TargetLanguage)
         {
-            RepeatedField<TextAnnotation> textAnnoatations = AnnotateVideo(linkToVideo, TargetLanguage);
-            string path = ToWebVTT(textAnnoatations);
-            WebVTTFile = path;
+            try
+            {
+                RepeatedField<TextAnnotation> textAnnoatations = AnnotateVideo(linkToVideo, TargetLanguage);
+                string path = ToWebVTT(textAnnoatations);
+                WebVTTFile = path;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{ex.Message} \n \n {ex.StackTrace}");
+                throw new Exception("Something went wrong while subbing your video, Please Try again");
+            }
+
         }
 
         /// <summary>
