@@ -1,2 +1,2 @@
-# SubEasy
+# EasySub
 Video subtitling service
