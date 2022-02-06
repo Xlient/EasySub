@@ -1,11 +1,11 @@
 using BlazorApp1.Services;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<VideoAnnoatationService>();
+builder.Services.AddSingleton<CloudUploadService>();
 builder.Services.AddAntDesign();
 
 var app = builder.Build();
