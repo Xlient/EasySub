@@ -1,9 +1,126 @@
-﻿@page "/"
+﻿
+@page "/"
+@using System
+@using BlazorApp1.Services
+@using Blazorise.SpinKit
+@using System.Globalization
+@inject VideoAnnoatationService VideoService
+@inject CloudUploadService UploadService
+@inject TranslationService TranslationService
+@inject IWebHostEnvironment Environment
 
 <PageTitle>Index</PageTitle>
+<NavMenu />
+ <section class="home-main-section">
+ <div class="img-wrapper">
+      <div class="lady-image"></div>
+    </div>
+    <div class="call-to-action">
+      <h1 class="tile"> Entertainment for Everyone</h1>
+      <span class="subtitle">A simple and convenient solution to enjoying your favourite International films and videos. <br> Get reliable subtitles for any video, in any language, with just one click!</span>
+      <a href="#upload-section" class="btn">Upload Video</a>
+    </div>
 
-<h1>Hello, world!</h1>
 
-Welcome to your new app.
+    <div id="upload-section">
+      
+        <p> Upload Files here</p>
+        <p>Max File Size: 10GB</p>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+        <Div Class="uploadInput-group">
+            <!--- Only supporting mp4 files for now -->
+            <FileEdit Changed="@LoadFile" AutoReset="false" Filter=".mp4" />  
+          
+                 <Select TValue="string" @bind-SelectedValue="@targetLanguage">
+                    @foreach(var culture in allCultures)
+
+                    {
+
+                    <SelectItem Value="@(culture.Name )"> @culture.Name @culture.DisplayName </SelectItem>
+                    
+                    }
+                    
+                 </Select>
+            
+            
+         </Div>
+        <Button Clicked="@OnButtonClicked"> Sub Video </Button>
+        @if (isLoading)
+        {
+            <h3> We're Subbing your video now</h3>
+          <SpinKit Centered="true" Color="White" Type="SpinKitType.Wander" />
+        }
+        else
+        {
+            <div class="player-container">
+               <video class="w-100"  src="@mediaLink" controls>
+                  <track default
+                      kind="captions"
+                    srclang="en"
+                    src="http://34.110.209.35:80/easy-backend/subs.vtt"/>
+                Sorry, your browser doesn't support embedded videos.
+               </video>
+			        
+                    
+
+            </div>
+        }
+    </div>
+  </section>
+  <div class="home-page-circle-1"></div>
+  <div class="home-page-circle-2"></div>
+  <div class="home-page-circle-3"></div>
+
+  
+
+@code{
+    // 10gb
+    private long maxFileSize = long.Parse("10737418240");
+    private bool isLoading;
+    private decimal progressPercent;
+    private string tempFilePath;
+    private string targetLanguage = "en";
+    private string mediaLink = "https://storage.googleapis.com/download/storage/v1/b/easy-sub-temp/o/zituujso.vz5.mp4?generation=1644139539003719&alt=media";
+    private string storageLink;
+
+    CultureInfo[] allCultures = CultureInfo.GetCultures(CultureTypes.AllCultures);
+    private async Task LoadFile(FileChangedEventArgs e)
+    {
+
+        var trustedFileName = Path.GetRandomFileName();
+        tempFilePath = Path.Combine(Environment.ContentRootPath,
+        Environment.EnvironmentName, "unsafe_uploads", $"{trustedFileName}.mp4");
+        var file = e.Files[0]; // We only need one file for the video
+
+        await using FileStream writeStream = new(tempFilePath, FileMode.Create);
+        using( var readStream = file.OpenReadStream(maxFileSize)){
+            var bytesRead = 0;
+            var totalRead = 0;
+            var buffer = new byte[1024 * 1024 * 15];
+
+            while ((bytesRead = await readStream.ReadAsync(buffer)) != 0)
+            {
+                totalRead += bytesRead;
+
+                await writeStream.WriteAsync(buffer, 0, bytesRead);
+
+                progressPercent = Decimal.Divide(totalRead, file.Size);
+
+                StateHasChanged();
+            }
+        }
+
+    }
+
+    private void OnButtonClicked()
+    {
+        isLoading = true;
+        UploadService.UploadFile(tempFilePath);
+        mediaLink = UploadService.Link;
+        storageLink = UploadService.GetObjectLink();
+        VideoService.SubVideo( storageLink, targetLanguage);
+
+        isLoading = false;
+    }
+   
+  }

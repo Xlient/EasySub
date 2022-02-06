@@ -1,4 +1,8 @@
 using BlazorApp1.Services;
+using Blazorise;
+using Blazorise.Bootstrap;
+using Blazorise.Icons.FontAwesome;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -6,7 +10,23 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<VideoAnnoatationService>();
 builder.Services.AddSingleton<CloudUploadService>();
-builder.Services.AddAntDesign();
+builder.Services.AddSingleton<TranslationService>();
+builder.Services.AddBlazorise(options =>
+{
+    options.ChangeTextOnKeyPress = true; // optional
+})
+      .AddBootstrapProviders()
+      .AddFontAwesomeIcons();
+//builder.Services.AddAntDesign();
+builder.Services.AddCors(
+    options =>
+    {
+        options.AddPolicy("AllowPlz", builder =>
+
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader());
+    });
 
 var app = builder.Build();
 
@@ -21,9 +41,8 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
-
 app.UseRouting();
-
+app.UseCors(); // its 7am and im tired plz just give me my text file
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 

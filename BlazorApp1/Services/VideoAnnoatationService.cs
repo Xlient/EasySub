@@ -9,24 +9,26 @@ namespace BlazorApp1.Services
         private readonly ILogger<VideoAnnoatationService> _logger;
         private VideoIntelligenceServiceClient _client;
         private IWebHostEnvironment _webHostEnvironment;
+        private TranslationService _translationService;
         /// <summary>
         /// Path to WebVTT file
         /// </summary>
         public string WebVTTFile { get; private set; }
 
         // logger will be passed in through Dependency injection
-        public VideoAnnoatationService(ILogger<VideoAnnoatationService> logger, IWebHostEnvironment webHostEnvironment)
+        public VideoAnnoatationService(ILogger<VideoAnnoatationService> logger, IWebHostEnvironment webHostEnvironment, TranslationService translationService)
         {
             _logger = logger;
             _webHostEnvironment = webHostEnvironment;
+            _translationService = translationService;
             _client = VideoIntelligenceServiceClient.Create();
         }
-        public void SubVideo(string linkToVideo, string TargetLanguage)
+        public void SubVideo(string linkToVideo, string TargetLanguage = "en-EN")
         {
             try
             {
                 RepeatedField<TextAnnotation> textAnnoatations = AnnotateVideo(linkToVideo, TargetLanguage);
-                string path = ToWebVTT(textAnnoatations);
+                string path = ToWebVTT(textAnnoatations, TargetLanguage);
                 WebVTTFile = path;
             }
             catch (Exception ex)
@@ -62,10 +64,10 @@ namespace BlazorApp1.Services
         /// </summary>
         /// <param name="textAnnotations"></param>
         /// <returns> path to the file</returns>
-        private string ToWebVTT(RepeatedField<TextAnnotation> textAnnotations)
+        private string ToWebVTT(RepeatedField<TextAnnotation> textAnnotations, string language)
         {
             //REPLACE WITH NAME with videoName.vtt  - videoName is the filename we pass in ...
-            string pathToSubs = Path.Combine(_webHostEnvironment.WebRootPath, "subs.vtt");
+            string pathToSubs = Path.Combine(@"/BlazorApp1/Server/bin/Release/net6.0/publish/wwwroot/static", "subs.vtt");
             using var file = File.Create(pathToSubs);
             using (var subFile = new StreamWriter(file, encoding: System.Text.Encoding.UTF8))
             {
@@ -93,7 +95,8 @@ namespace BlazorApp1.Services
                     subFile.WriteLine(lineCount);
                     subFile.WriteLine($"0{startTime.Hours}:0{startTime.Minutes}:0{startTime.Seconds}.{startTime.Milliseconds} --> 0{ endTime.Hours}:0{ endTime.Minutes}:0{ endTime.Seconds}.{ endTime.Milliseconds}");
                     //TODO create translation Method  then call it here
-                    subFile.WriteLine($" - {annotation.Text}");
+                    string translatedText = _translationService.TranslateLanguage(annotation.Text, language);
+                    subFile.WriteLine($" - {translatedText}");
                     subFile.WriteLine();
 
                     lineCount++;

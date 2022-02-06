@@ -5,6 +5,11 @@ VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorApp1", "BlazorApp1.csproj", "{62889692-704C-4656-9848-71F205E72273}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{08EC8C02-9CFB-4578-AAE9-BFB6D8826AB2}"
+	ProjectSection(SolutionItems) = preProject
+		C:\Users\Leigh\Downloads\subeasy-340222-b2621a01a556.json = C:\Users\Leigh\Downloads\subeasy-340222-b2621a01a556.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

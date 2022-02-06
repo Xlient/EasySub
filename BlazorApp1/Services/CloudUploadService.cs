@@ -9,7 +9,7 @@ namespace BlazorApp1.Services
         private StorageClient _storageClient;
         private readonly string _bucketName = Environment.GetEnvironmentVariable("BUCKET_NAME");
         private string objectName;
-
+        public string Link { get; private set; }
 
         public CloudUploadService(ILogger<CloudUploadService> logger)
         {
@@ -17,13 +17,15 @@ namespace BlazorApp1.Services
             _storageClient = StorageClient.Create();
         }
 
-        public void UploadFile(string path)
+        public async void UploadFile(string path)
         {
             try
             {
-                string objectName = Path.GetFileName(path);
+                objectName = Path.GetFileName(path);
                 using var fileStream = File.OpenRead(path);
                 _storageClient.UploadObject(_bucketName, objectName, null, fileStream);
+                var objectMeta = await _storageClient.GetObjectAsync(_bucketName, objectName);
+                Link = objectMeta.MediaLink;
             }
             catch (Exception ex)
             {
@@ -32,11 +34,10 @@ namespace BlazorApp1.Services
             }
         }
 
-        public async Task<string> GetObjectLink()
+        public string GetObjectLink()
         {
-            var gObject = await _storageClient.GetObjectAsync(_bucketName, objectName);
-            return gObject.SelfLink;
-        }
+            return $"gs://{_bucketName}/{objectName}";
 
+        }
     }
 }

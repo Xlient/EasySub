@@ -12,7 +12,9 @@
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "BUCKET_NAME": "easy-sub-temp",
+        "GOOGLE_APPLICATION_CREDENTIALS": "C:\\Users\\Leigh\\Downloads\\subeasy-340222-b2621a01a556.json"
       },
       "applicationUrl": "https://localhost:7104;http://localhost:5104",
       "dotnetRunMessages": true
@@ -28,6 +30,11 @@
       "commandName": "Docker",
       "launchBrowser": true,
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "BUCKET_NAME": "easy-sub-temp",
+        "GOOGLE_APPLICATION_CREDENTIALS": "C:\\Users\\Leigh\\Downloads\\subeasy-340222-b2621a01a556.json"
+      },
       "publishAllPorts": true,
       "useSSL": true
     }

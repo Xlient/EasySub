@@ -8,17 +8,51 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>.</DockerfileContext>
   </PropertyGroup>
+	
+	<PropertyGroup>
+		<StaticWebAssetBasePath>static</StaticWebAssetBasePath>
+	</PropertyGroup>
+	
+	<ItemGroup>
+	  <None Remove="Development\subtitles\subs.vtt" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Development\subtitles\subs.vtt">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="Development\unsafe_uploads\0sgzzapm.b0e.mp4" />
+    <Content Include="Development\unsafe_uploads\1qhsj3rl.3rp.mp4" />
+    <Content Include="Development\unsafe_uploads\bmjnlic0.4ms.mp4" />
+    <Content Include="Development\unsafe_uploads\dewzrliv.0qk.mp4" />
+    <Content Include="Development\unsafe_uploads\dgf5hn23.2yz.mp4" />
+    <Content Include="Development\unsafe_uploads\i1on5dgx.rap.mp4" />
+    <Content Include="Development\unsafe_uploads\iib25fbj.xoa.mp4" />
+    <Content Include="Development\unsafe_uploads\im2txu1r.tq3.mp4" />
+    <Content Include="Development\unsafe_uploads\lirhwwkz.u5b.mp4" />
+    <Content Include="Development\unsafe_uploads\n4e5j1bq.a4k.mp4" />
+    <Content Include="Development\unsafe_uploads\pui1dsca.tu2.mp4" />
+    <Content Include="Development\unsafe_uploads\uclg4tv5.un1.mp4" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AntDesign" Version="0.10.3.1" />
+    <PackageReference Include="Blazored.Video" Version="1.0.0" />
+    <PackageReference Include="Blazorise" Version="0.9.5.5" />
+    <PackageReference Include="Blazorise.Bootstrap" Version="0.9.5.5" />
+    <PackageReference Include="Blazorise.Components" Version="0.9.5.5" />
+    <PackageReference Include="Blazorise.Icons.FontAwesome" Version="0.9.5.5" />
+    <PackageReference Include="Blazorise.SpinKit" Version="0.9.5.5" />
     <PackageReference Include="Google.Cloud.Storage.V1" Version="3.7.0" />
+    <PackageReference Include="Google.Cloud.Translate.V3" Version="2.4.0" />
     <PackageReference Include="Google.Cloud.VideoIntelligence.V1" Version="2.3.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Development\Unsafe_uploads\" />
-    <Folder Include="wwwroot\subs\" />
+    <Folder Include="Data\" />
+    <Folder Include="wwwroot\lib\" />
   </ItemGroup>
 
 </Project>
