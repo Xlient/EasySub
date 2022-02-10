@@ -17,7 +17,7 @@
     </div>
     <div class="call-to-action">
       <h1 class="tile"> Entertainment for Everyone</h1>
-      <span class="subtitle">A simple and convenient solution to enjoying your favourite International films and videos. <br> Get reliable subtitles for any video, in any language, with just one click!</span>
+      <span class="subtitle">A simple and convenient solution to enjoying your favorite International films and videos. <br> Get reliable subtitles for any video, in any language, with just one click!</span>
       <a href="#upload-section" class="btn">Upload Video</a>
     </div>
 
@@ -36,7 +36,7 @@
 
                     {
 
-                    <SelectItem Value="@(culture.Name )"> @culture.Name @culture.DisplayName </SelectItem>
+                    <SelectItem Value="@(culture.Name )"> @culture.DisplayName </SelectItem>
                     
                     }
                     
@@ -53,11 +53,15 @@
         else
         {
             <div class="player-container">
-               <video class="w-100"  src="@mediaLink" controls>
+               <video class="w-100"  
+                      src="@mediaLink" 
+                      crossorigin="anonymous"
+                      controls
+                      poster="" >
                   <track default
                       kind="captions"
-                    srclang="en"
-                    src="http://34.110.209.35:80/easy-backend/subs.vtt"/>
+                    srclang="@targetLanguage"
+                    src="https://www.googleapis.com/download/storage/v1/b/easy-subs/o/qj1mz5k3-hce.vtt?generation=1644472276109355&alt=media"/>
                 Sorry, your browser doesn't support embedded videos.
                </video>
 			        
@@ -79,15 +83,17 @@
     private bool isLoading;
     private decimal progressPercent;
     private string tempFilePath;
-    private string targetLanguage = "en";
+    private string targetLanguage = "en"; // default video
     private string mediaLink = "https://storage.googleapis.com/download/storage/v1/b/easy-sub-temp/o/zituujso.vz5.mp4?generation=1644139539003719&alt=media";
     private string storageLink;
+    private string subtitleLink;
+
 
     CultureInfo[] allCultures = CultureInfo.GetCultures(CultureTypes.AllCultures);
     private async Task LoadFile(FileChangedEventArgs e)
     {
 
-        var trustedFileName = Path.GetRandomFileName();
+        string trustedFileName = Path.GetRandomFileName().Replace(".", "-");;
         tempFilePath = Path.Combine(Environment.ContentRootPath,
         Environment.EnvironmentName, "unsafe_uploads", $"{trustedFileName}.mp4");
         var file = e.Files[0]; // We only need one file for the video
@@ -112,14 +118,16 @@
 
     }
 
-    private void OnButtonClicked()
+    private async Task OnButtonClicked()
     {
         isLoading = true;
-        UploadService.UploadFile(tempFilePath);
-        mediaLink = UploadService.Link;
+        await UploadService.UploadFile(tempFilePath);
+        mediaLink = UploadService.VideoLink;
         storageLink = UploadService.GetObjectLink();
-        VideoService.SubVideo( storageLink, targetLanguage);
 
+        await VideoService.SubVideo( storageLink, targetLanguage);
+
+        subtitleLink = UploadService.SubtitleLink;
         isLoading = false;
     }
    

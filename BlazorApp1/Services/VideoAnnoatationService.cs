@@ -10,26 +10,30 @@ namespace BlazorApp1.Services
         private VideoIntelligenceServiceClient _client;
         private IWebHostEnvironment _webHostEnvironment;
         private TranslationService _translationService;
+        CloudUploadService _uploadService;
+        public int ProgressPercent { get; set; }
+
         /// <summary>
         /// Path to WebVTT file
         /// </summary>
         public string WebVTTFile { get; private set; }
 
         // logger will be passed in through Dependency injection
-        public VideoAnnoatationService(ILogger<VideoAnnoatationService> logger, IWebHostEnvironment webHostEnvironment, TranslationService translationService)
+        public VideoAnnoatationService(ILogger<VideoAnnoatationService> logger, IWebHostEnvironment webHostEnvironment, TranslationService translationService, CloudUploadService uploadService)
         {
             _logger = logger;
             _webHostEnvironment = webHostEnvironment;
             _translationService = translationService;
+            _uploadService = uploadService;
             _client = VideoIntelligenceServiceClient.Create();
         }
-        public void SubVideo(string linkToVideo, string TargetLanguage = "en-EN")
+        public async Task SubVideo(string linkToVideo, string TargetLanguage = "en")
         {
             try
             {
-                RepeatedField<TextAnnotation> textAnnoatations = AnnotateVideo(linkToVideo, TargetLanguage);
+                RepeatedField<TextAnnotation> textAnnoatations = await AnnotateVideo(linkToVideo, TargetLanguage);
                 string path = ToWebVTT(textAnnoatations, TargetLanguage);
-                WebVTTFile = path;
+                await _uploadService.UploadFile(path, CloudUploadService.FileType.SUBTITLE);
             }
             catch (Exception ex)
             {
@@ -46,17 +50,19 @@ namespace BlazorApp1.Services
         /// <param name="languageCode"></param>
         /// <returns> Text Annoations from the video
         /// </returns>
-        private RepeatedField<TextAnnotation> AnnotateVideo(string linkToVideo, string languageCode)
+        private async Task<RepeatedField<TextAnnotation>> AnnotateVideo(string linkToVideo, string languageCode) // out config)
         {
+
             TextDetectionConfig config = new TextDetectionConfig();
             config.LanguageHints.Add(languageCode);
 
-            Operation<AnnotateVideoResponse, AnnotateVideoProgress> operation = _client.AnnotateVideo(
+            Operation<AnnotateVideoResponse, AnnotateVideoProgress> operation = await _client.AnnotateVideoAsync(
                     linkToVideo,
                  new[] { Feature.TextDetection });
 
-            Operation<AnnotateVideoResponse, AnnotateVideoProgress> resultOperation = operation.PollUntilCompleted();
+            Operation<AnnotateVideoResponse, AnnotateVideoProgress> resultOperation = await operation.PollUntilCompletedAsync();
             VideoAnnotationResults result = resultOperation.Result.AnnotationResults[0];
+
             return result.TextAnnotations;
         }
         /// <summary>
@@ -67,12 +73,12 @@ namespace BlazorApp1.Services
         private string ToWebVTT(RepeatedField<TextAnnotation> textAnnotations, string language)
         {
             //REPLACE WITH NAME with videoName.vtt  - videoName is the filename we pass in ...
-            string pathToSubs = Path.Combine(@"/BlazorApp1/Server/bin/Release/net6.0/publish/wwwroot/static", "subs.vtt");
+            string randomFileName = Path.GetRandomFileName().Replace(".", "-");
+            string pathToSubs = Path.Combine(_webHostEnvironment.WebRootPath, "subtitles", $"{randomFileName}.vtt");
             using var file = File.Create(pathToSubs);
             using (var subFile = new StreamWriter(file, encoding: System.Text.Encoding.UTF8))
             {
                 int lineCount = 1;
-                string startTimeStamp = "00:00:00";
                 subFile.WriteLine("WEBVTT");
                 subFile.WriteLine();
                 subFile.WriteLine();

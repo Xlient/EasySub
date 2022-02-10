@@ -8,8 +8,16 @@ namespace BlazorApp1.Services
         private readonly ILogger<CloudUploadService> _logger;
         private StorageClient _storageClient;
         private readonly string _bucketName = Environment.GetEnvironmentVariable("BUCKET_NAME");
-        private string objectName;
-        public string Link { get; private set; }
+        private readonly string _subsBucketName = Environment.GetEnvironmentVariable("SUBS_BUCKET_NAME");
+        private string _objectName;
+
+        public enum FileType
+        {
+            VIDEO,
+            SUBTITLE
+        };
+        public string SubtitleLink { get; private set; }
+        public string VideoLink { get; private set; }
 
         public CloudUploadService(ILogger<CloudUploadService> logger)
         {
@@ -17,26 +25,36 @@ namespace BlazorApp1.Services
             _storageClient = StorageClient.Create();
         }
 
-        public async void UploadFile(string path)
+        public async Task UploadFile(string path, FileType fileType = FileType.VIDEO)
         {
             try
             {
-                objectName = Path.GetFileName(path);
-                using var fileStream = File.OpenRead(path);
-                _storageClient.UploadObject(_bucketName, objectName, null, fileStream);
-                var objectMeta = await _storageClient.GetObjectAsync(_bucketName, objectName);
-                Link = objectMeta.MediaLink;
+                if (fileType == FileType.SUBTITLE)
+                {
+                    string objName = Path.GetFileName(path);
+                    using var fileStream = File.OpenRead(path);
+                    var uploadedObject = await _storageClient.UploadObjectAsync(_subsBucketName, objName, null, fileStream);
+                    SubtitleLink = uploadedObject.SelfLink;
+                }
+                else
+                {
+
+                    _objectName = Path.GetFileName(path);
+                    using var fileStream = File.OpenRead(path);
+                    var uploadedObject = await _storageClient.UploadObjectAsync(_bucketName, _objectName, null, fileStream);
+                    VideoLink = uploadedObject.MediaLink;
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{ex.Message}");
+                _logger.LogError($"{ex.Message} \n \n {ex.StackTrace}");
                 throw new Exception("Something went wrong uploading the file to the cloud");
             }
         }
 
         public string GetObjectLink()
         {
-            return $"gs://{_bucketName}/{objectName}";
+            return $"gs://{_bucketName}/{_objectName}";
 
         }
     }

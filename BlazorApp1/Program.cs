@@ -4,7 +4,7 @@ using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
 
 var builder = WebApplication.CreateBuilder(args);
-
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
@@ -21,7 +21,8 @@ builder.Services.AddBlazorise(options =>
 builder.Services.AddCors(
     options =>
     {
-        options.AddPolicy("AllowPlz", builder =>
+        options.AddPolicy(name: MyAllowSpecificOrigins,
+            builder =>
 
         builder.AllowAnyOrigin()
                .AllowAnyMethod()
@@ -42,7 +43,7 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseRouting();
-app.UseCors(); // its 7am and im tired plz just give me my text file
+app.UseCors();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
